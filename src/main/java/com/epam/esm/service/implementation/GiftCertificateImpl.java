@@ -88,7 +88,7 @@ public class GiftCertificateImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateWithTagDto> searchByNameOrDescription(SearchGiftDto searchGiftDto){
+    public List<GiftCertificateWithTagDtoNew> searchByNameOrDescription(SearchGiftDto searchGiftDto){
 
         if(checkValidInput(searchGiftDto.getSortBy(),searchGiftDto.getAscDesc())==false){
             throw new InputNotMatchException("Enter 'name' or 'description' for sortBy, 'asc' or 'desc' for ascDesc fields");

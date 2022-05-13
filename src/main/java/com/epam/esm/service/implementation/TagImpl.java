@@ -19,7 +19,7 @@ public class TagImpl implements TagService {
     }
 
     @Override
-    public int create(TagDto tagDto) {   //todo: check for id is not present in db or make db id as auto increment
+    public int create(TagDto tagDto) {
         boolean tagExists = tagRepository.checkExists(tagDto.getId());
         if(tagExists){
             throw new TagExistException("Tag already exists with id: "+tagDto.getId());

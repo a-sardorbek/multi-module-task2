@@ -10,7 +10,7 @@ public interface GiftCertificateService {
      List<GiftCertificateDto> findAll();
      int deleteUsingId(String id);
      int insertTagIdToGift(String tagId, String giftId);
-     List<GiftCertificateWithTagDto> searchByNameOrDescription(SearchGiftDto searchGiftDto);
+     List<GiftCertificateWithTagDtoNew> searchByNameOrDescription(SearchGiftDto searchGiftDto);
      GiftResponse updateGiftById(String id, GiftUpdateDto giftUpdateDto);
      List<GiftCertificateWithTagDtoNew> getListCertificateWithTagsNew();
 

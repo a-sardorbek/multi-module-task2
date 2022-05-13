@@ -41,7 +41,7 @@ public class GiftCertificateRepository {
         String query = "select * from gift_certificate where idGift = ?";
         GiftResponse giftResponse = jdbcTemplate.queryForObject(
                 query,
-                new BeanPropertyRowMapper<>(GiftResponse.class) // todo: check for GiftCertificateRowMapper
+                new BeanPropertyRowMapper<>(GiftResponse.class)
                 ,id);
         giftResponse.setId(id);
         return giftResponse;
@@ -49,7 +49,7 @@ public class GiftCertificateRepository {
 
     public List<GiftCertificateDto> getAll() {
         String query = "select * from gift_certificate";
-        return jdbcTemplate.query(query, new GiftCertificateRowMapper()); //todo: check for GiftCertificateResultSet
+        return jdbcTemplate.query(query, new GiftCertificateRowMapper());
     }
 
     public int deleteById(Integer id,boolean orphanRemoval) {
@@ -70,24 +70,23 @@ public class GiftCertificateRepository {
     }
 
 
-    //todo: check for empty table select exists(select 1 from gift_certificate_tag) AS Output;
-    public List<GiftCertificateWithTagDto> searchGiftByPartNameDescription(String name, String description, String sortBy, String ascDesc, int withNameOrDescription){
+    public List<GiftCertificateWithTagDtoNew> searchGiftByPartNameDescription(String name, String description, String sortBy, String ascDesc, int withNameOrDescription){
         String query0 ="select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
-                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? order by gc."+sortBy+" "+ascDesc;
+                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? group by id_gift_certificate order by gc."+sortBy+" "+ascDesc;
 
         String query1 = "select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
-                "inner join tag as t on (t.idTag = gct.id_tag) where gc.description like ? order by gc."+sortBy+" "+ascDesc;
+                "inner join tag as t on (t.idTag = gct.id_tag) where gc.description like ? group by id_gift_certificate order by gc."+sortBy+" "+ascDesc;
 
         String query2 = "select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
-                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? or gc.description like ? order by gc."+sortBy+" "+ascDesc;
+                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? or gc.description like ? group by id_gift_certificate order by gc."+sortBy+" "+ascDesc;
 
         switch (withNameOrDescription){
-            case 0: return jdbcTemplate.query(query0, new GiftCertificateResultSet(),"%"+name+"%");
-            case 1: return jdbcTemplate.query(query1, new GiftCertificateResultSet(),"%"+description+"%");
-            case 2: return jdbcTemplate.query(query2, new GiftCertificateResultSet(),"%"+name+"%","%"+description+"%");
+            case 0: return jdbcTemplate.query(query0, new GiftCertificateResultWithTagNew(jdbcTemplate),"%"+name+"%");
+            case 1: return jdbcTemplate.query(query1, new GiftCertificateResultWithTagNew(jdbcTemplate),"%"+description+"%");
+            case 2: return jdbcTemplate.query(query2, new GiftCertificateResultWithTagNew(jdbcTemplate),"%"+name+"%","%"+description+"%");
         }
         return new ArrayList<>();
     }
@@ -124,7 +123,7 @@ public class GiftCertificateRepository {
 
         GiftResponse giftResponse = jdbcTemplate.queryForObject(
                 queryGet,
-                new BeanPropertyRowMapper<>(GiftResponse.class) // todo: check for GiftCertificateRowMapper
+                new BeanPropertyRowMapper<>(GiftResponse.class)
                 ,id);
         giftResponse.setId(id);
         return giftResponse;

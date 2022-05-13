@@ -54,11 +54,12 @@ public class GiftCertificateController {
 
 
     @PostMapping(value = "/search-by-name-description",produces = {MediaType.APPLICATION_JSON_VALUE},consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<List<GiftCertificateWithTagDto>> searchByNameOrDescription(@RequestBody SearchGiftDto searchGiftDto){
-        List<GiftCertificateWithTagDto> giftCertificateWithTagDto =
+    public ResponseEntity<List<GiftCertificateWithTagDtoNew>> searchByNameOrDescription(@RequestBody SearchGiftDto searchGiftDto){
+        List<GiftCertificateWithTagDtoNew> giftCertificateWithTagDto =
                 giftCertificateService.searchByNameOrDescription(searchGiftDto);
         return new ResponseEntity<>(giftCertificateWithTagDto,HttpStatus.OK);
     }
+
 
     @GetMapping(value = "/all",produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<List<GiftCertificateDto>> findAll(){
