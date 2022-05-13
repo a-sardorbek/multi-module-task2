@@ -2,14 +2,13 @@ package com.epam.esm.exceptions;
 
 import com.epam.esm.exceptions.custom.*;
 import com.epam.esm.utils.ErrorCodeUtils;
-import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import java.util.Objects;
 
 import static org.springframework.http.HttpStatus.*;
@@ -17,16 +16,9 @@ import static org.springframework.http.HttpStatus.*;
 @RestControllerAdvice
 public class HandleExceptions {
 
-
-    @Autowired
-    private Gson gson;
-
-    private static final String INTERNAL_SERVER_ERROR_MSG = "An error occurred while processing the request";
     private static final String METHOD_IS_NOT_ALLOWED = "This request method is not allowed on this endpoint. Please send a '%s' request";
 
-
-
-    private ResponseEntity<String> createHttpResponse(HttpStatus httpStatus, String message,Integer errorCode) {
+    private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message,Integer errorCode) {
 
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setErrorMessage(message);
@@ -36,10 +28,10 @@ public class HandleExceptions {
         response.setHttpStatusCode(httpStatus.value());
         response.setResponseMessage(responseMessage);
 
-        return new ResponseEntity<>(gson.toJson(response),httpStatus);
+        return new ResponseEntity<>(response,httpStatus);
     }
 
-    private ResponseEntity<String> createHttpResponse(HttpStatus httpStatus, String message) {
+    private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message) {
 
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setErrorMessage(message);
@@ -49,7 +41,7 @@ public class HandleExceptions {
         response.setHttpStatusCode(httpStatus.value());
         response.setResponseMessage(responseMessage);
 
-        return new ResponseEntity<>(gson.toJson(response),httpStatus);
+        return new ResponseEntity<>(response,httpStatus);
     }
 
 //    @ExceptionHandler(Exception.class)
@@ -58,19 +50,39 @@ public class HandleExceptions {
 //    }
 
     @ExceptionHandler(GiftCertificateNotFoundException.class)
-    public ResponseEntity<String> giftCertificateNotFound(){
-        return createHttpResponse(HttpStatus.NOT_FOUND, "Gift certificate not found",ErrorCodeUtils.NOT_FOUND_CODE);
+    public ResponseEntity<HttpResponse> giftCertificateNotFound(GiftCertificateNotFoundException giftCertificateNotFoundException){
+        return createHttpResponse(HttpStatus.NOT_FOUND, giftCertificateNotFoundException.getMessage(),ErrorCodeUtils.NOT_FOUND_CODE);
+    }
+
+    @ExceptionHandler(GiftCertificateExistException.class)
+    public ResponseEntity<HttpResponse> giftCertificateExist(GiftCertificateExistException giftCertificateExistException){
+        return createHttpResponse(ALREADY_REPORTED, giftCertificateExistException.getMessage(),ErrorCodeUtils.EXIST);
+    }
+
+    @ExceptionHandler(TagExistException.class)
+    public ResponseEntity<HttpResponse> tagExist(TagExistException tagExistException){
+        return createHttpResponse(ALREADY_REPORTED, tagExistException.getMessage(),ErrorCodeUtils.EXIST);
+    }
+
+    @ExceptionHandler(GiftAndTagWithGivenIdsConnectedException.class)
+    public ResponseEntity<HttpResponse> giftAndTagConnected(GiftAndTagWithGivenIdsConnectedException giftAndTagWithGivenIdsConnectedException){
+        return createHttpResponse(ALREADY_REPORTED, giftAndTagWithGivenIdsConnectedException.getMessage(),ErrorCodeUtils.EXIST);
+    }
+
+    @ExceptionHandler(InputNotMatchException.class)
+    public ResponseEntity<HttpResponse> giftAndTagConnected(InputNotMatchException inputNotMatchException){
+        return createHttpResponse(BAD_REQUEST, inputNotMatchException.getMessage(),ErrorCodeUtils.INPUT_NOT_MATCH);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<String> methodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
+    public ResponseEntity<HttpResponse> methodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
         HttpMethod supportedMethod = Objects.requireNonNull(exception.getSupportedHttpMethods().iterator().next());
         return createHttpResponse(METHOD_NOT_ALLOWED, String.format(METHOD_IS_NOT_ALLOWED, supportedMethod));
     }
 
     @ExceptionHandler(TagNotFoundException.class)
-    public ResponseEntity<String> tagNotFoundException(){
-        return createHttpResponse(HttpStatus.NOT_FOUND,"Tag not found",ErrorCodeUtils.NOT_FOUND_CODE);
+    public ResponseEntity<HttpResponse> tagNotFoundException(TagNotFoundException tagNotFoundException){
+        return createHttpResponse(HttpStatus.NOT_FOUND,tagNotFoundException.getMessage(),ErrorCodeUtils.NOT_FOUND_CODE);
     }
 
 }

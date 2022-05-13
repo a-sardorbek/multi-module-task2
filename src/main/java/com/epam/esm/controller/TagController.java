@@ -1,58 +1,53 @@
 package com.epam.esm.controller;
 
 import com.epam.esm.dto.TagDto;
-import com.epam.esm.exceptions.custom.TagNotFoundException;
+import com.epam.esm.dto.TagUpdateDto;
 import com.epam.esm.service.TagService;
-import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/tag")
+@RequestMapping("/api/tag")
 public class TagController {
 
-    @Autowired
     private TagService tagService;
 
-    @Autowired
-    private Gson gson;
+    public TagController(TagService tagService){
+        this.tagService = tagService;
+    }
 
-    @PostMapping(value = "/add-tag",produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity createTag(@RequestBody String tagCertificate){
 
-        TagDto tagDto = gson.fromJson(tagCertificate,TagDto.class);
+    @PostMapping(value = "/add-tag",produces = {MediaType.APPLICATION_JSON_VALUE},consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity createTag(@RequestBody TagDto tagDto){
         tagService.create(tagDto);
-
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PutMapping(value = "/update-by-id/{id}",produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> updateById(@PathVariable("id")String id,
-                                             @RequestBody String tagUpdateDto) throws TagNotFoundException {
-        TagDto tagDto =
-                tagService.updateTagById(id,tagUpdateDto);
-        return new ResponseEntity<>(gson.toJson(tagDto),HttpStatus.OK);
+    @PutMapping(value = "/update-by-id", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<TagDto> updateById(@RequestBody TagUpdateDto tagUpdateDto){
+        TagDto tagResponseDto = tagService.updateTagById(tagUpdateDto.getId(),tagUpdateDto.getName());
+        return new ResponseEntity<>(tagResponseDto,HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/delete-by-id/{id}",produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> deleteById(@PathVariable("id")String id) throws TagNotFoundException {
+    public ResponseEntity deleteById(@PathVariable("id") String id){
         tagService.deleteUsingId(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(value = "/find-by-id/{id}",produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> findById(@PathVariable("id")String id) throws TagNotFoundException {
+    @GetMapping(value = "/find-by-id/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<TagDto> findById(@PathVariable("id")String id){
         TagDto tagDto = tagService.findById(id);
-        return new ResponseEntity<>(gson.toJson(tagDto),HttpStatus.OK);
+        return new ResponseEntity<>(tagDto,HttpStatus.OK);
     }
 
     @GetMapping(value = "/all",produces = "application/json")
-    public ResponseEntity<String> findAll(){
-        String tagAsJson = gson.toJson(tagService.findAll());
-        return new ResponseEntity<>(tagAsJson,HttpStatus.OK);
+    public ResponseEntity<List<TagDto>> findAll(){
+        return new ResponseEntity<>(tagService.findAll(),HttpStatus.OK);
     }
 
 }

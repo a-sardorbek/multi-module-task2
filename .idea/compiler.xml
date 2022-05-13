@@ -3,15 +3,16 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Maven default annotation processors profile">
+      <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="persistence" />
-        <module name="model" />
+        <module name="multi-module-m" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="model" target="8" />
+      <module name="persistence" target="8" />
       <module name="service" target="8" />
       <module name="web" target="8" />
     </bytecodeTargetLevel>
