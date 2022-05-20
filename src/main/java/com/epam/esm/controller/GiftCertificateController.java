@@ -2,6 +2,7 @@ package com.epam.esm.controller;
 
 import com.epam.esm.dto.*;
 import com.epam.esm.exceptions.custom.GiftCertificateNotFoundException;
+import com.epam.esm.exceptions.custom.success.SuccessfullyCreated;
 import com.epam.esm.service.GiftCertificateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,38 +23,38 @@ public class GiftCertificateController {
     }
 
 
-    @PostMapping(value = "/add-tag-to-gift",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity addGiftCertificateToTag(@RequestBody GiftTagDto giftTagDto){
-        giftCertificateService.insertTagIdToGift(giftTagDto.getTagId(), giftTagDto.getGiftId());
+
+    @PostMapping(value = "/",consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity createGiftCertificate(@RequestBody GiftCertificateDtoNew giftCertificateDto){
+        int n = giftCertificateService.create(giftCertificateDto);
+        if(n==1){
+           throw new SuccessfullyCreated("Gift successfully created");
+        }
         return new ResponseEntity(HttpStatus.OK);
     }
 
-
-    @PostMapping(value = "/add",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity createGiftCertificate(@RequestBody GiftCertificateDto giftCertificateDto){
-        giftCertificateService.create(giftCertificateDto);
-        return new ResponseEntity(HttpStatus.OK);
-    }
-
-    @PutMapping(value = "/update-by-id/{id}",produces = {MediaType.APPLICATION_JSON_VALUE},consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @PutMapping(value = "/{id}",produces = {MediaType.APPLICATION_JSON_VALUE},consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<GiftResponse> updateById(@PathVariable("id")String id,
-                                                   @RequestBody GiftUpdateDto giftUpdateDto){
+                                                   @RequestBody GiftUpdateDtoNew giftUpdateDto){
         return new ResponseEntity<>(giftCertificateService.updateGiftById(id,giftUpdateDto),HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/delete-by-id/{id}")
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity deleteById(@PathVariable("id")String id){
-        giftCertificateService.deleteUsingId(id);
+        int n = giftCertificateService.deleteUsingId(id);
+        if(n==1){
+            throw new SuccessfullyCreated("Gift successfully deleted");
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(value = "/find-by-id/{id}",produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/{id}",produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<GiftResponse> findById(@PathVariable("id")String id) throws GiftCertificateNotFoundException {
         return new ResponseEntity<>(giftCertificateService.findById(id),HttpStatus.OK);
     }
 
 
-    @PostMapping(value = "/search-by-name-description",produces = {MediaType.APPLICATION_JSON_VALUE},consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/search-by-name-date",produces = {MediaType.APPLICATION_JSON_VALUE},consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<List<GiftCertificateWithTagDtoNew>> searchByNameOrDescription(@RequestBody SearchGiftDto searchGiftDto){
         List<GiftCertificateWithTagDtoNew> giftCertificateWithTagDto =
                 giftCertificateService.searchByNameOrDescription(searchGiftDto);

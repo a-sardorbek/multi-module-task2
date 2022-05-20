@@ -1,6 +1,7 @@
-package com.epam.esm.repositoryTest;
+package com.epam.esm.testing;
 
 import com.epam.esm.dto.TagDto;
+import com.epam.esm.dto.TagDtoNew;
 import com.epam.esm.repository.TagRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +58,7 @@ public class TagTest {
 
     @Test
     public void findAllTagsSuccessfully(){
-        List<TagDto> allCertificate = tagRepository.getAll();
+        List<TagDtoNew> allCertificate = tagRepository.getAll();
         assertNotNull(allCertificate);
         assertEquals(true,allCertificate.size()==4);
         assertEquals("Winter",allCertificate.get(0).getName());
@@ -71,12 +72,6 @@ public class TagTest {
         assertEquals("Snow",tagDto.getName());
     }
 
-    @Test
-    public void updateTagById(){
-        TagDto tagTestUpdate = tagRepository.updateById(2,"tag test update");
-        assertNotNull(tagTestUpdate);
-        assertEquals("tag test update",tagTestUpdate.getName());
-    }
 
     @Test
     public void deleteTagByIdIfNotConnectedToGift(){

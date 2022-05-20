@@ -1,6 +1,7 @@
 package com.epam.esm.repository;
 
 import com.epam.esm.dto.TagDto;
+import com.epam.esm.dto.TagDtoNew;
 import com.epam.esm.rowmappers.TagResultSet;
 import com.epam.esm.rowmappers.TagRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,12 @@ public class TagRepository {
         return jdbcTemplate.update(query,id,name);
     }
 
+    public int insertNew(String name) {
+        String query = "insert into tag(name) values (?)";
+        return jdbcTemplate.update(query,name);
+    }
+
+
     public TagDto getById(Integer id) {
         String query = "select * from tag where idTag = ?";
         return jdbcTemplate.queryForObject(
@@ -36,7 +43,7 @@ public class TagRepository {
                 id);
     }
 
-    public List<TagDto> getAll() {
+    public List<TagDtoNew> getAll() {
         String query = "select * from tag";
         return jdbcTemplate.query(query, new TagResultSet());
     }
@@ -58,17 +65,31 @@ public class TagRepository {
         return jdbcTemplate.queryForObject(check,Boolean.class,id);
     }
 
-    public TagDto updateById(Integer id, String tagName) {
-        String query = "update tag set name = ? where idTag = ?";
-        jdbcTemplate.update(query,
-                tagName,
-                id);
-
-        return new TagDto(id,tagName);
+    public boolean checkExistsNew(String name) {
+        String check = "select exists(select * from tag where name=?)";
+        return jdbcTemplate.queryForObject(check,Boolean.class,name);
     }
 
     public boolean checkTagConnectedToGift(Integer id) {
         String check = "select exists(select id_tag from gift_certificate_tag where id_tag=?)";
         return jdbcTemplate.queryForObject(check,Boolean.class,id);
+    }
+
+    public int getNextId() {
+        String query = "SELECT AUTO_INCREMENT" +
+                " FROM information_schema.TABLES" +
+                " WHERE TABLE_SCHEMA = 'modulestodo'" +
+                " AND TABLE_NAME = 'tag'";
+        return jdbcTemplate.queryForObject(query,Integer.class);
+    }
+
+    public int getLastTagId(String name) {
+        String query = "select idTag from tag where name=?";
+        return jdbcTemplate.queryForObject(query,Integer.class,name);
+    }
+
+    public String getNameTag(int parseInt) {
+        String query = "select name from tag where idTag=?";
+        return jdbcTemplate.queryForObject(query,String.class,parseInt);
     }
 }

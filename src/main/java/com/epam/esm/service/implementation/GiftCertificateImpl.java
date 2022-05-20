@@ -7,6 +7,7 @@ import com.epam.esm.repository.TagRepository;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.utils.ServiceUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,14 +26,57 @@ public class GiftCertificateImpl implements GiftCertificateService {
     }
 
     @Override
-    public int create(GiftCertificateDto giftCertificateDto) {
-        boolean giftExists = giftCertificateRepository.checkExists(giftCertificateDto.getId());
-        if(giftExists){
-            throw new GiftCertificateExistException("Gift Certificate already exists with id: "+giftCertificateDto.getId());
+    public int create(GiftCertificateDtoNew giftCertificateDto) {
+        if (StringUtils.isBlank(giftCertificateDto.getName())) {
+            throw new NameCannotBeBlankException("Enter name first!");
         }
-        return giftCertificateRepository.insert(giftCertificateDto);
-    }
 
+        if (StringUtils.isBlank(giftCertificateDto.getDescription())) {
+            throw new NameCannotBeBlankException("Enter description first!");
+        }
+
+        if (!NumberUtils.isParsable(String.valueOf(giftCertificateDto.getPrice()))) {
+            String price = "";
+            if(giftCertificateDto.getPrice()==null){
+                price = "is empty";
+            }else {
+                price = giftCertificateDto.getPrice();
+            }
+            throw new PriceIncorrectException("The price " + price + ", not valid");
+        }
+
+        if (!NumberUtils.isParsable(String.valueOf(giftCertificateDto.getDuration()))) {
+            String duration = "";
+            if(giftCertificateDto.getDuration()==null){
+                duration = "is empty";
+            }else {
+                duration = giftCertificateDto.getDuration();
+            }
+            throw new PriceIncorrectException("The duration " + duration + ", not valid");
+        }
+
+        boolean giftExists = giftCertificateRepository.checkExistsNew(giftCertificateDto.getName());
+        if (giftExists) {
+            throw new GiftCertificateExistException("Gift Certificate already exists with Name: " + giftCertificateDto.getName());
+        }
+        int createdSuccessfully = giftCertificateRepository.insert(giftCertificateDto);
+
+        if(giftCertificateDto.getTagDtoNewList() != null){
+            for(TagDtoNew tagDtoNew: giftCertificateDto.getTagDtoNewList()){
+                if(tagRepository.checkExistsNew(tagDtoNew.getName())==false){
+                    int idTag = tagRepository.getNextId();
+                    int idGift = giftCertificateRepository.getLastId();
+                    tagRepository.insertNew(tagDtoNew.getName());
+                    giftCertificateRepository.insertWithTag(idTag,idGift);
+                }else {
+                    int idTagExist = tagRepository.getLastTagId(tagDtoNew.getName());
+                    int idGift = giftCertificateRepository.getLastId();
+                    giftCertificateRepository.insertWithTag(idTagExist,idGift);
+                }
+            }
+        }
+        return createdSuccessfully;
+    }
 
     @Override
     public GiftResponse findById(String id) {
@@ -44,7 +88,6 @@ public class GiftCertificateImpl implements GiftCertificateService {
         }
         return giftCertificateRepository.getById(Integer.parseInt(id));
     }
-
 
     @Override
     public List<GiftCertificateDto> findAll() {
@@ -70,40 +113,31 @@ public class GiftCertificateImpl implements GiftCertificateService {
 
 
     @Override
-    public int insertTagIdToGift(String tagId, String giftId){
-        if(!ServiceUtils.checkIsNumeric(tagId) || tagRepository.checkExists(Integer.parseInt(tagId)) == false) {
-            throw new TagNotFoundException("Tag not found by id: "+tagId);
-        }
-        if(!ServiceUtils.checkIsNumeric(giftId) || giftCertificateRepository.checkExists(Integer.parseInt(giftId)) == false) {
-            throw new GiftCertificateNotFoundException("Gift Certificate does not exists with id: "+giftId);
-        }
+    public List<GiftCertificateWithTagDtoNew> searchByNameOrDescription(SearchGiftDto searchGiftDto) {
 
-        if(giftCertificateRepository.checkTagIdAndGiftIdConnected(Integer.parseInt(giftId),Integer.parseInt(tagId))){
-            throw new GiftAndTagWithGivenIdsConnectedException("Gift id: "+giftId+" and Tag id: "+tagId+" already connected");
-        }
+        if(StringUtils.isBlank(searchGiftDto.getSortBy())) searchGiftDto.setSortBy("name");
+        if(StringUtils.isBlank(searchGiftDto.getAscDesc())) searchGiftDto.setAscDesc("asc");
 
-        return giftCertificateRepository.insertWithTag(Integer.parseInt(tagId),Integer.parseInt(giftId));
-
-
-    }
-
-    @Override
-    public List<GiftCertificateWithTagDtoNew> searchByNameOrDescription(SearchGiftDto searchGiftDto){
-
-        if(checkValidInput(searchGiftDto.getSortBy(),searchGiftDto.getAscDesc())==false){
-            throw new InputNotMatchException("Enter 'name' or 'description' for sortBy, 'asc' or 'desc' for ascDesc fields");
+        if(checkSortBy(searchGiftDto.getSortBy())){
+            if (searchGiftDto.getSortBy().equals("date")) searchGiftDto.setSortBy("create_date");
+        }else {
+            throw new InputNotMatchException("Enter 'name' or 'date' for sortBy");
         }
 
-        if (StringUtils.isBlank(searchGiftDto.getName())) {
-            return giftCertificateRepository.searchGiftByPartNameDescription(
-                    searchGiftDto.getName(),
-                    searchGiftDto.getDescription(),
-                    searchGiftDto.getSortBy(),
-                    searchGiftDto.getAscDesc(),
-                    1);
+        if (checkAscDesc(searchGiftDto.getAscDesc())==false){
+            throw new InputNotMatchException("Enter 'asc' or 'desc' for ascDes");
         }
 
-        if (StringUtils.isBlank(searchGiftDto.getDescription())) {
+        if (StringUtils.isBlank(searchGiftDto.getName()) && StringUtils.isNotBlank(searchGiftDto.getDescription())) {
+                return giftCertificateRepository.searchGiftByPartNameDescription(
+                        searchGiftDto.getName(),
+                        searchGiftDto.getDescription(),
+                        searchGiftDto.getSortBy(),
+                        searchGiftDto.getAscDesc(),
+                        1);
+        }
+
+        if (StringUtils.isNotBlank(searchGiftDto.getName()) && StringUtils.isBlank(searchGiftDto.getDescription())) {
             return  giftCertificateRepository.searchGiftByPartNameDescription(
                     searchGiftDto.getName(),
                     searchGiftDto.getDescription(),
@@ -120,8 +154,16 @@ public class GiftCertificateImpl implements GiftCertificateService {
                     searchGiftDto.getAscDesc(),
                     2);
         }
-        return new ArrayList<>();
 
+        if (StringUtils.isBlank(searchGiftDto.getName()) && StringUtils.isBlank(searchGiftDto.getDescription())) {
+            return giftCertificateRepository.searchGiftByPartNameDescription(
+                    searchGiftDto.getName(),
+                    searchGiftDto.getDescription(),
+                    searchGiftDto.getSortBy(),
+                    searchGiftDto.getAscDesc(),
+                    3);
+        }
+        return new ArrayList<>();
     }
 
 
@@ -133,7 +175,7 @@ public class GiftCertificateImpl implements GiftCertificateService {
 
 
     @Override
-    public GiftResponse updateGiftById(String id, GiftUpdateDto giftUpdateDto){
+    public GiftResponse updateGiftById(String id, GiftUpdateDtoNew giftUpdateDto){
         if(!ServiceUtils.checkIsNumeric(id)) {
             throw new GiftCertificateNotFoundException("Make sure that id: "+id+" is correct");
         }
@@ -141,15 +183,41 @@ public class GiftCertificateImpl implements GiftCertificateService {
             throw new GiftCertificateNotFoundException("Gift Certificate does not exists with id: "+id);
         }
 
+        if (!NumberUtils.isParsable(String.valueOf(giftUpdateDto.getPrice()))) {
+            if(giftUpdateDto.getPrice()!=null) {
+                throw new PriceIncorrectException("The price " + giftUpdateDto.getPrice() + " is not valid");
+            }
+        }
+
+        if(giftUpdateDto.getTagDtoNewList() != null){
+            for(TagDtoNew tagDtoNew: giftUpdateDto.getTagDtoNewList()){
+                int idTag = tagRepository.getNextId();
+                if(tagRepository.checkExistsNew(tagDtoNew.getName())==false){
+                    tagRepository.insertNew(tagDtoNew.getName());
+                    giftCertificateRepository.insertWithTag(idTag,Integer.parseInt(id));
+                }else if(giftCertificateRepository.checkTagIdAndGiftIdConnected(Integer.parseInt(id),tagRepository.getLastTagId(tagDtoNew.getName()))==false){
+                    int idTagExist = tagRepository.getLastTagId(tagDtoNew.getName());
+                    giftCertificateRepository.insertWithTag(idTagExist,Integer.parseInt(id));
+                }
+            }
+        }
+
         return giftCertificateRepository.updateById(Integer.parseInt(id),giftUpdateDto);
     }
 
-
-    private boolean checkValidInput(String sortBy, String ascDesc) {
-        if(sortBy.equals("name") || sortBy.equals("description") && ascDesc.equals("asc") || ascDesc.equals("desc")){
+    private boolean checkAscDesc(String ascDesc) {
+        if(ascDesc.equals("asc")|| ascDesc.equals("desc")){
             return true;
         }
         return false;
     }
+
+    private boolean checkSortBy(String sortBy) {
+        if(sortBy.equals("name")|| sortBy.equals("date")){
+            return true;
+        }
+        return false;
+    }
+
 
 }

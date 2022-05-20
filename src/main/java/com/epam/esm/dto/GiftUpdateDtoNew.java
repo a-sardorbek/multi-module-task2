@@ -4,25 +4,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 
-public class GiftUpdateDto {
-
+public class GiftUpdateDtoNew {
 
     @JsonProperty("name")
     private String name;
     @JsonProperty("description")
     private String description;
     @JsonProperty("price")
-    private Double price;
+    private String price;
     @JsonProperty("duration")
     private Integer duration;
     @JsonProperty("lastUpdateDate")
     private String lastUpdateDate;
+    @JsonProperty("tagDtoNewList")
+    List<TagDtoNew> tagDtoNewList;
 
-    public GiftUpdateDto(){}
 
-    public GiftUpdateDto(String name, String description, Double price, Integer duration) {
+    public GiftUpdateDtoNew(){}
+
+    public GiftUpdateDtoNew(String name, String description, String price, Integer duration) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -50,11 +53,11 @@ public class GiftUpdateDto {
     }
 
 
-    public Double getPrice() {
+    public String getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(String price) {
         this.price = price;
     }
 
@@ -71,6 +74,15 @@ public class GiftUpdateDto {
     }
 
     public void setLastUpdateDate(String lastUpdateDate) {
+
         this.lastUpdateDate = lastUpdateDate;
     }
+    public List<TagDtoNew> getTagDtoNewList() {
+        return tagDtoNewList;
+    }
+
+    public void setTagDtoNewList(List<TagDtoNew> tagDtoNewList) {
+        this.tagDtoNewList = tagDtoNewList;
+    }
+
 }

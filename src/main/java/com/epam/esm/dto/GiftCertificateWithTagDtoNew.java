@@ -11,11 +11,11 @@ public class GiftCertificateWithTagDtoNew {
     private Integer duration;
     private String createDate;
     private String lastUpdateDate;
-    private List<TagDto> tagDto;
+    private List<TagDtoNew> tagDto;
 
     public GiftCertificateWithTagDtoNew(){}
 
-    public GiftCertificateWithTagDtoNew(Integer id, String name, String description, Double price, Integer duration, String createDate, String lastUpdateDate, List<TagDto> tagDto) {
+    public GiftCertificateWithTagDtoNew(Integer id, String name, String description, Double price, Integer duration, String createDate, String lastUpdateDate, List<TagDtoNew> tagDto) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -82,11 +82,11 @@ public class GiftCertificateWithTagDtoNew {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public List<TagDto> getTagDto() {
+    public List<TagDtoNew> getTagDto() {
         return tagDto;
     }
 
-    public void setTagDto(List<TagDto> tagDto) {
+    public void setTagDto(List<TagDtoNew> tagDto) {
         this.tagDto = tagDto;
     }
 }

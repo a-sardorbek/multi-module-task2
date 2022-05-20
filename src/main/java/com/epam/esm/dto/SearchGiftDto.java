@@ -13,6 +13,7 @@ public class SearchGiftDto {
     @JsonProperty("ascDesc")
     private String ascDesc;
 
+
     public String getSortBy() {
         return sortBy;
     }

@@ -1,6 +1,7 @@
 package com.epam.esm.rowmappers;
 
 import com.epam.esm.dto.TagDto;
+import com.epam.esm.dto.TagDtoNew;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
@@ -9,15 +10,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TagResultSet implements ResultSetExtractor<List<TagDto>>{
+public class TagResultSet implements ResultSetExtractor<List<TagDtoNew>>{
 
     @Override
-    public List<TagDto> extractData(ResultSet rs) throws SQLException, DataAccessException {
+    public List<TagDtoNew> extractData(ResultSet rs) throws SQLException, DataAccessException {
 
-        List<TagDto> tagDtoList = new ArrayList<>();
+        List<TagDtoNew> tagDtoList = new ArrayList<>();
         while(rs.next()){
-            TagDto tagDto = new TagDto();
-            tagDto.setId(rs.getInt("idTag"));
+            TagDtoNew tagDto = new TagDtoNew();
             tagDto.setName(rs.getString("name"));
             tagDtoList.add(tagDto);
         }

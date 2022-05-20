@@ -1,6 +1,7 @@
 package com.epam.esm.exceptions;
 
 import com.epam.esm.exceptions.custom.*;
+import com.epam.esm.exceptions.custom.success.SuccessfullyCreated;
 import com.epam.esm.utils.ErrorCodeUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import static org.springframework.http.HttpStatus.*;
 public class HandleExceptions {
 
     private static final String METHOD_IS_NOT_ALLOWED = "This request method is not allowed on this endpoint. Please send a '%s' request";
+    private static final String INTERNAL_SERVER_ERROR_MSG = "Internal error occurred";
 
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message,Integer errorCode) {
 
@@ -44,14 +46,40 @@ public class HandleExceptions {
         return new ResponseEntity<>(response,httpStatus);
     }
 
+
+    private ResponseEntity<SuccessResponseCustom> createHttpResponseSuccess(HttpStatus httpStatus, String message) {
+
+       SuccessResponseCustom successResponseCustom = new SuccessResponseCustom();
+       successResponseCustom.setHttpStatusCode(httpStatus.value());
+       successResponseCustom.setMessage(message);
+        return new ResponseEntity<>(successResponseCustom,httpStatus);
+    }
+
+
 //    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<String> internalServerErrorException(Exception exception) {
-//        return createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG,ErrorCodeUtils.MAPPING_NOT_FOUND);
+//    public ResponseEntity<HttpResponse> internalServerErrorException(Exception exception) {
+//        return createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
 //    }
+
+
+    @ExceptionHandler(SuccessfullyCreated.class)
+    public ResponseEntity<SuccessResponseCustom> giftCertificateCreate(SuccessfullyCreated successfullyCreated){
+        return createHttpResponseSuccess(HttpStatus.OK, successfullyCreated.getMessage());
+    }
 
     @ExceptionHandler(GiftCertificateNotFoundException.class)
     public ResponseEntity<HttpResponse> giftCertificateNotFound(GiftCertificateNotFoundException giftCertificateNotFoundException){
         return createHttpResponse(HttpStatus.NOT_FOUND, giftCertificateNotFoundException.getMessage(),ErrorCodeUtils.NOT_FOUND_CODE);
+    }
+
+    @ExceptionHandler(NameCannotBeBlankException.class)
+    public ResponseEntity<HttpResponse> nameCouldNotFound(NameCannotBeBlankException nameCannotBeBlankException){
+        return createHttpResponse(HttpStatus.NOT_FOUND, nameCannotBeBlankException.getMessage(),ErrorCodeUtils.NOT_FOUND_CODE);
+    }
+
+    @ExceptionHandler(PriceIncorrectException.class)
+    public ResponseEntity<HttpResponse> nameCouldNotFound(PriceIncorrectException priceIncorrectException){
+        return createHttpResponse(HttpStatus.NOT_FOUND, priceIncorrectException.getMessage(),ErrorCodeUtils.INPUT_NOT_MATCH);
     }
 
     @ExceptionHandler(GiftCertificateExistException.class)

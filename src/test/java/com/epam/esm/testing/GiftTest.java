@@ -1,8 +1,6 @@
-package com.epam.esm.repositoryTest;
+package com.epam.esm.testing;
 
-import com.epam.esm.dto.GiftCertificateDto;
-import com.epam.esm.dto.GiftResponse;
-import com.epam.esm.dto.GiftUpdateDto;
+import com.epam.esm.dto.*;
 import com.epam.esm.repository.GiftCertificateRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,12 +52,12 @@ public class GiftTest {
 
     @Test
     public void insertNewGiftSuccessfully(){
-        GiftCertificateDto giftCertificateDto = new GiftCertificateDto(
+        GiftCertificateDtoNew giftCertificateDto = new GiftCertificateDtoNew(
                 15,
                 "test certificate",
                 "testing description",
-                500D,
-                10
+                "500D",
+                "10"
         );
         int newGift = giftCertificateRepository.insert(giftCertificateDto);
         assertEquals(1,newGift);
@@ -67,17 +65,7 @@ public class GiftTest {
         assertNotNull(newGift);
     }
 
-    @Test
-    public void insertNewGiftFailedIfIdIsNotGivenOrNull(){
-        GiftCertificateDto giftCertificateDto = new GiftCertificateDto(
-                "test certificate",
-                "testing description",
-                500D,
-                10
-        );
-        assertThrows(DataIntegrityViolationException.class,()->giftCertificateRepository.insert(giftCertificateDto));
-        assertEquals(null,giftCertificateDto.getId());
-    }
+
 
 
     @Test
@@ -90,10 +78,10 @@ public class GiftTest {
 
     @Test
     public void updateGiftByIdWithAllFields(){
-        GiftUpdateDto giftUpdateDto = new GiftUpdateDto(
+        GiftUpdateDtoNew giftUpdateDto = new GiftUpdateDtoNew(
                 "test gift",
                 "test description",
-                50.5,
+                "50.5",
                 25);
         GiftResponse giftCertificateDto = giftCertificateRepository.updateById(2,giftUpdateDto);
         assertNotNull(giftCertificateDto);
@@ -103,7 +91,7 @@ public class GiftTest {
 
     @Test
     public void updateOnlyNameOfGiftById(){
-        GiftUpdateDto giftUpdateDto = new GiftUpdateDto();
+        GiftUpdateDtoNew giftUpdateDto = new GiftUpdateDtoNew();
         giftUpdateDto.setName("test name132");
 
         GiftResponse giftCertificateDto = giftCertificateRepository.updateById(2,giftUpdateDto);

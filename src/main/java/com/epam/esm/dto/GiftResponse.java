@@ -2,6 +2,8 @@ package com.epam.esm.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public class GiftResponse {
     @JsonProperty("id")
     private Integer id;
@@ -17,9 +19,14 @@ public class GiftResponse {
     private String createDate;
     @JsonProperty("lastUpdateDate")
     private String lastUpdateDate;
+    @JsonProperty("tagDtoList")
+    private List<TagDtoNew> tagDtoList;
 
     public GiftResponse() {
     }
+
+
+
 
     public Integer getId() {
         return id;
@@ -75,5 +82,13 @@ public class GiftResponse {
 
     public void setLastUpdateDate(String lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public List<TagDtoNew> getTagDtoList() {
+        return tagDtoList;
+    }
+
+    public void setTagDtoList(List<TagDtoNew> tagDtoList) {
+        this.tagDtoList = tagDtoList;
     }
 }

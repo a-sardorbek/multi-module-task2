@@ -1,6 +1,7 @@
 package com.epam.esm.service.implementation;
 
 import com.epam.esm.dto.TagDto;
+import com.epam.esm.dto.TagDtoNew;
 import com.epam.esm.exceptions.custom.TagExistException;
 import com.epam.esm.exceptions.custom.TagNotFoundException;
 import com.epam.esm.repository.TagRepository;
@@ -20,9 +21,14 @@ public class TagImpl implements TagService {
 
     @Override
     public int create(TagDto tagDto) {
-        boolean tagExists = tagRepository.checkExists(tagDto.getId());
+
+        if(tagDto.getName()==null){
+            throw new TagExistException("Tag name cannot be empty");
+        }
+
+        boolean tagExists = tagRepository.checkExistsNew(tagDto.getName());
         if(tagExists){
-            throw new TagExistException("Tag already exists with id: "+tagDto.getId());
+            throw new TagExistException("Tag already exists with name: "+tagDto.getName());
         }
         return tagRepository.insert(tagDto);
     }
@@ -41,7 +47,7 @@ public class TagImpl implements TagService {
 
 
     @Override
-    public List<TagDto> findAll() {
+    public List<TagDtoNew> findAll() {
         if(tagRepository.getAll().size()==0){
             throw new TagNotFoundException("Empty list");
         }
@@ -60,18 +66,6 @@ public class TagImpl implements TagService {
             return tagRepository.deleteById(Integer.parseInt(id), true);
         }
         return tagRepository.deleteById(Integer.parseInt(id), false);
-    }
-
-
-    @Override
-    public TagDto updateTagById(String id, String tagName){
-        if(!ServiceUtils.checkIsNumeric(id)) {
-            throw new TagNotFoundException("Make sure tag with id: "+id+" is correct");
-        }
-        if(tagRepository.checkExists(Integer.parseInt(id)) == false) {
-            throw new TagNotFoundException("Tag not found with id: "+id);
-        }
-        return tagRepository.updateById(Integer.parseInt(id),tagName);
     }
 
 }

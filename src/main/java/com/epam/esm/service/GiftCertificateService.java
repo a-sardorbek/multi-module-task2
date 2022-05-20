@@ -5,13 +5,12 @@ import java.util.List;
 
 public interface GiftCertificateService {
 
-     int create(GiftCertificateDto giftCertificateDto);
+     int create(GiftCertificateDtoNew giftCertificateDto);
      GiftResponse findById(String id);
      List<GiftCertificateDto> findAll();
      int deleteUsingId(String id);
-     int insertTagIdToGift(String tagId, String giftId);
      List<GiftCertificateWithTagDtoNew> searchByNameOrDescription(SearchGiftDto searchGiftDto);
-     GiftResponse updateGiftById(String id, GiftUpdateDto giftUpdateDto);
+     GiftResponse updateGiftById(String id, GiftUpdateDtoNew giftUpdateDto);
      List<GiftCertificateWithTagDtoNew> getListCertificateWithTagsNew();
 
 }

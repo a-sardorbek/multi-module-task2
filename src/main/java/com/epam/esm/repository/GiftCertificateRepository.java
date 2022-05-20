@@ -1,9 +1,7 @@
 package com.epam.esm.repository;
 
 import com.epam.esm.dto.*;
-import com.epam.esm.rowmappers.GiftCertificateResultSet;
-import com.epam.esm.rowmappers.GiftCertificateResultWithTagNew;
-import com.epam.esm.rowmappers.GiftCertificateRowMapper;
+import com.epam.esm.rowmappers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,12 +21,11 @@ public class GiftCertificateRepository {
     }
 
 
-    public int insert(GiftCertificateDto giftCertificateDto) {
-        String query = "insert into gift_certificate(idGift,name,description,price,duration,create_date,last_update_date)" +
-                " values (?,?,?,?,?,?,?)";
+    public int insert(GiftCertificateDtoNew giftCertificateDto) {
+        String query = "insert into gift_certificate(name,description,price,duration,create_date,last_update_date)" +
+                " values (?,?,?,?,?,?)";
 
         return jdbcTemplate.update(query,
-                giftCertificateDto.getId(),
                 giftCertificateDto.getName(),
                 giftCertificateDto.getDescription(),
                 giftCertificateDto.getPrice(),
@@ -36,6 +33,7 @@ public class GiftCertificateRepository {
                 giftCertificateDto.getCreateDate(),
                 giftCertificateDto.getLastUpdateDate());
     }
+
 
     public GiftResponse getById(Integer id) {
         String query = "select * from gift_certificate where idGift = ?";
@@ -69,24 +67,36 @@ public class GiftCertificateRepository {
         return jdbcTemplate.queryForObject(check,Boolean.class,id);
     }
 
+    public boolean checkExistsNew(String name){
+        String check = "select exists(select * from gift_certificate where name=?)";
+        return jdbcTemplate.queryForObject(check,Boolean.class,name);
+    }
+
 
     public List<GiftCertificateWithTagDtoNew> searchGiftByPartNameDescription(String name, String description, String sortBy, String ascDesc, int withNameOrDescription){
+
         String query0 ="select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
-                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? group by id_gift_certificate order by gc."+sortBy+" "+ascDesc;
+                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? group by gct.id_gift_certificate order by gc."+sortBy+" "+ascDesc;
 
         String query1 = "select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
-                "inner join tag as t on (t.idTag = gct.id_tag) where gc.description like ? group by id_gift_certificate order by gc."+sortBy+" "+ascDesc;
+                "inner join tag as t on (t.idTag = gct.id_tag) where gc.description like ? group by gct.id_gift_certificate order by gc."+sortBy+" "+ascDesc;
 
         String query2 = "select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
-                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? or gc.description like ? group by id_gift_certificate order by gc."+sortBy+" "+ascDesc;
+                "inner join tag as t on (t.idTag = gct.id_tag) where gc.name like ? or gc.description like ?  group by gct.id_gift_certificate order by gc."+sortBy+" "+ascDesc;
+
+        String queryNoName = "select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
+                "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
+                "inner join tag as t on (t.idTag = gct.id_tag) group by gct.id_gift_certificate order by gc."+sortBy+" "+ascDesc;
+
 
         switch (withNameOrDescription){
             case 0: return jdbcTemplate.query(query0, new GiftCertificateResultWithTagNew(jdbcTemplate),"%"+name+"%");
             case 1: return jdbcTemplate.query(query1, new GiftCertificateResultWithTagNew(jdbcTemplate),"%"+description+"%");
             case 2: return jdbcTemplate.query(query2, new GiftCertificateResultWithTagNew(jdbcTemplate),"%"+name+"%","%"+description+"%");
+            case 3: return jdbcTemplate.query(queryNoName, new GiftCertificateResultWithTagNew(jdbcTemplate));
         }
         return new ArrayList<>();
     }
@@ -103,11 +113,11 @@ public class GiftCertificateRepository {
         String query = "select gc.idGift, gc.name, gc.description, gc.price, gc.duration, gc.create_date, gc.last_update_date, t.idTag, t.name from\n" +
                 "gift_certificate as gc inner join gift_certificate_tag as gct on (gc.idGift = gct.id_gift_certificate)\n" +
                 "inner join tag as t on (t.idTag = gct.id_tag) group by id_gift_certificate";
-        return jdbcTemplate.query(query, new GiftCertificateResultWithTagNew(jdbcTemplate));
+        return jdbcTemplate.query(query, new GiftCertificateResultWithTagNewAll(jdbcTemplate,"",""));
     }
 
 
-    public GiftResponse updateById(Integer id, GiftUpdateDto giftUpdateDto) {
+    public GiftResponse updateById(Integer id, GiftUpdateDtoNew giftUpdateDto) {
 
         String query = "update gift_certificate set name = ifnull(?,name), description = ifnull(?,description), price = ifnull(?,price), duration = ifnull(?,duration), last_update_date = ifnull(?,last_update_date) where idGift = ?";
         jdbcTemplate.update(query,
@@ -118,12 +128,11 @@ public class GiftCertificateRepository {
                 giftUpdateDto.getLastUpdateDate(),
                 id);
 
-
         String queryGet = "select * from gift_certificate where idGift = ?";
 
         GiftResponse giftResponse = jdbcTemplate.queryForObject(
                 queryGet,
-                new BeanPropertyRowMapper<>(GiftResponse.class)
+                new GiftResponseRowMapper(jdbcTemplate)
                 ,id);
         giftResponse.setId(id);
         return giftResponse;
@@ -138,5 +147,10 @@ public class GiftCertificateRepository {
     public boolean checkTagConnectedToGift(int giftId) {
         String check = "select exists(select id_gift_certificate from gift_certificate_tag where id_gift_certificate=?)";
         return jdbcTemplate.queryForObject(check,Boolean.class,giftId);
+    }
+
+    public int getLastId() {
+            String query = "select idGift from gift_certificate order by idGift desc limit 1";
+            return jdbcTemplate.queryForObject(query,Integer.class);
     }
 }
